@@ -1,0 +1,86 @@
+{
+  "assignment_id": "example_assignment",
+  "assignment_name": "Example Assignment Template",
+  "course_code": "CS XXX",
+  "term": "Fall 2025",
+  "questions": [
+    {
+      "id": "question_1",
+      "text": "Question 1: What is the time complexity of binary search? Explain your reasoning.",
+      "points": 10.0,
+      "answer_key": "The time complexity of binary search is O(log n). In each iteration, binary search divides the search space in half, leading to a logarithmic number of comparisons in the worst case.",
+      "question_type": "short_answer",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 5.0,
+        "mostly_correct": 8.0,
+        "correct": 10.0,
+        "criteria": [
+          "correct_time_complexity",
+          "clear_explanation",
+          "proper_justification"
+        ],
+        "instructions": "Check if student provided O(log n) and explained the halving of search space."
+      }
+    },
+    {
+      "id": "question_2",
+      "text": "Question 2: Write pseudocode for implementing a stack using two queues.",
+      "points": 15.0,
+      "answer_key": null,
+      "question_type": "essay",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 7.5,
+        "mostly_correct": 13.0,
+        "correct": 15.0,
+        "criteria": [
+          "correct_push_operation",
+          "correct_pop_operation",
+          "proper_use_of_queues",
+          "clear_pseudocode"
+        ],
+        "instructions": "Evaluate the correctness of push and pop operations, and clarity of pseudocode."
+      }
+    },
+    {
+      "id": "question_3",
+      "text": "Question 3: Explain the difference between depth-first search (DFS) and breadth-first search (BFS). When would you use each?",
+      "points": 10.0,
+      "answer_key": null,
+      "question_type": "essay",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 5.0,
+        "mostly_correct": 8.0,
+        "correct": 10.0,
+        "criteria": [
+          "correct_dfs_explanation",
+          "correct_bfs_explanation",
+          "identified_use_cases",
+          "clear_comparison"
+        ],
+        "instructions": "Check understanding of both algorithms and appropriate use cases."
+      }
+    }
+  ],
+  "general_rubric": {
+    "no_submission": 0.0,
+    "attempted": null,
+    "mostly_correct": null,
+    "correct": null,
+    "instructions": "Grade based on correctness, completeness, and clarity. Award partial credit for partial understanding.",
+    "criteria": [
+      "correctness",
+      "completeness",
+      "clarity",
+      "proper_terminology"
+    ]
+  },
+  "total_points": 35.0,
+  "grading_instructions": "Evaluate each answer for correctness and completeness. Provide constructive feedback. Be consistent across all submissions.",
+  "allow_partial_credit": true,
+  "created_by": "Grade Lens Template",
+  "version": "1.0"
+}
+

@@ -1,0 +1,52 @@
+{
+  "assignment_id": "cs361_hw5",
+  "assignment_name": "CS361 HW5 - Automata Theory",
+  "course_code": "CS361",
+  "term": "Fall 2025",
+  "questions": [
+    {
+      "id": "question_1",
+      "text": "Use the pumping lemma to prove the following language is not regular: L1 = {w over {a,b,c} | w has twice the number of a's as b's.}",
+      "points": 15.0,
+      "answer_key": null,
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 7.5,
+        "mostly_correct": 14.0,
+        "correct": 15.0,
+        "criteria": [
+          "correct_pumping_lemma_setup",
+          "valid_contradiction",
+          "proper_conclusion"
+        ],
+        "instructions": "Check if student properly used pumping lemma with correct setup, found a valid contradiction, and reached proper conclusion."
+      }
+    },
+    {
+      "id": "question_2",
+      "text": "Prove the language L2 defined below is either regular or not regular. L2 = {w over {a,b} | w has the same number of a's and b's, and |w| <= 2}",
+      "points": 15.0,
+      "answer_key": null,
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 7.5,
+        "mostly_correct": 14.0,
+        "correct": 15.0,
+        "criteria": [
+          "correctly_determined_regularity",
+          "provided_proper_proof",
+          "enumerated_language_or_provided_regex_or_dfa"
+        ],
+        "instructions": "Check if student correctly determined whether L2 is regular or not and provided proper justification. L2 is finite (only: ε, a, b, ab, ba), therefore it is regular."
+      }
+    }
+  ],
+  "total_points": 30.0,
+  "grading_instructions": "Grade fairly and consistently. For each question, determine if the student: (1) did not submit, (2) attempted the question, (3) got most of it right with minor errors, or (4) completely solved it correctly. Award partial credit based on the rubric.",
+  "allow_partial_credit": true,
+  "created_by": "Grade Lens",
+  "version": "1.0"
+}
+

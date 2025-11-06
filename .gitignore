@@ -8,6 +8,7 @@ venv/
 __pycache__/
 *.py[cod]
 *$py.class
+.mypy_cache/
 
 # Distribution / packaging
 *.egg-info/
@@ -22,5 +23,17 @@ build/
 .DS_Store
 
 # Project specific
-submissions/
-output/
+# Student submissions (keep directory structure but not files)
+submissions/*
+!submissions/.gitkeep
+
+# Output files (keep directory structure but not files)
+output/*
+!output/.gitkeep
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+.pytest_cache/
