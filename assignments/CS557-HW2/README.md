@@ -1,4 +1,4 @@
-# ai-hw-4
+# CS557-HW2
 
 **Course:** CS557  
 **Term:** fall 2025  
@@ -6,4 +6,4 @@
 
 ## Questions
 
-This assignment has 6 questions.
+This assignment has 4 questions.

@@ -1,0 +1,90 @@
+{
+  "assignment_id": "CS557-HW2",
+  "assignment_name": "CS557-HW2",
+  "course_code": "CS557",
+  "term": "fall 2025",
+  "questions": [
+    {
+      "id": "question_1",
+      "text": "Problem 1 (10 points)\n\nApply Uniform-Cost Search (UCS) on the graph below (start S, goal G).\n\nYour task:\n1. (6 points)\nShow the g(x) (path cost) for every node x at each iteration.\n2. (2 points)\nReport the final path returned by UCS from S to G and its total cost.\n3. (2 points)\nIs UCS guaranteed to find the shortest path when negative edge costs are present?\nExplain why or why not.",
+      "points": 10,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 5,
+        "mostly_correct": 9,
+        "correct": 10,
+        "criteria": [
+          "Correct and complete g(x) values shown for every node at each UCS iteration",
+          "Correct final path from S to G with correct total cost",
+          "Correct conceptual explanation about UCS behavior with negative edge costs"
+        ],
+        "instructions": "Award points for a complete UCS trace: each iteration's frontier expansion and resulting g(x) values. Partial credit for correct partial traces or partially correct path/cost. Full credit only if the trace is consistent with the final path reported and the negative-cost explanation correctly states that UCS is not guaranteed with negative costs (and explains why: because UCS assumes non-decreasing path costs and negative edges can cause already-expanded nodes to have better paths later)."
+      }
+    },
+    {
+      "id": "question_2",
+      "text": "Problem 2 (25 points, programming)\n\nAn agent navigates a 10\u00d710 grid maze, indexed by rows r0\u2013r9 and columns c0\u2013c9.\nThe agent may move only in the 4-neighborhood (up, down, left, right).\nNo diagonal moves are allowed.\n\nc0 c1 c2 c3 c4 c5 c6 c7 c8 c9\nr0 S . # . . . . . . .\nr1 . # # . . . # # . .\nr2 . . . . . # . . . .\nr3 . # . . # . # . # . # .\nr4 . # . . # . # . . .\nr5 . # . . . . . # . . .\nr6 . . . . # # . . . # .\nr7 . # . . . . . . # . .\nr8 . . . . # . # . . . .\nr9 . . . . . . # . . . G\n\nLegend:\nS = Start location G = Goal location\n# = Obstacle (impassable)\n. = Open cell (cost to enter = 1)\n. =High-cost open cell (cost to enter = 100):\n{(r2,c2), (r2,c9), (r5,c3), (r5,c7), (r5,c8), (r7,c3), (r9,c3)}\n\nYour task:\n1. (10 points)\nImplement and run each of the following search algorithms on the maze:\n\u25cb Depth-First Search (DFS)\n\u25cb Breadth-First Search (BFS)\n\u25cb Uniform Cost Search (UCS)\n\u25cb Greedy Best-First Search, where h(x)=|r(x)-r(G)|+|c(x)-c(G)| (Manhattan distance)\n\u25cb A* Search, using the same h(x) as above.\nFrontier insertion rule:\nWhen adding all unreached successors of a node to the frontier, insert them in this fixed order: topmost \u2192 leftmost \u2192 rightmost \u2192 bottommost.\nFor example, if the successors are (r1,c1), (r2,c1), (r1,c2), (r2,c2), they should be added in the order (r1,c1), (r1,c2), (r2,c1), (r2,c2).\n\n2. (10 points)\nFor each algorithm, record and report:\n\u25cb # Nodes expanded: number of nodes removed from the frontier and expanded.\n\u25cb Total path cost: sum of cell-entry costs along the final path from S to G.\n\u25cb Total path length: number of moves on the final path from S to G.\n\u25cb Execution time: wall-clock time in milliseconds (measured on the same machine, same Python version).",
+      "points": 25,
+      "answer_key": null,
+      "question_type": "coding",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 12.5,
+        "mostly_correct": 22.5,
+        "correct": 25,
+        "criteria": [
+          "Correct implementation of each algorithm respecting movement rules and frontier insertion order",
+          "Accurate recording of nodes expanded, path cost, path length, and execution time for each algorithm",
+          "Provided commented source code and any required logs/output (missing commented code gets 0 for code portion)",
+          "Reproducibility: clear instructions for running and environment notes"
+        ],
+        "instructions": "Grade for correctness of algorithm implementations and correctness of reported statistics. Partial credit for algorithms that run but have errors in path or counts. Deduct points if frontier insertion order not followed or high-cost cells not treated per specification. Enforce the requirement that source code with comments be uploaded \u2014 award 0 points to the programming portion if commented code is missing. Check execution time reporting plausibility but allow some tolerance."
+      }
+    },
+    {
+      "id": "question_3",
+      "text": "Problem 3 (10 points)\n\nFigure 1: A game tree.\nIn class, we went through how alpha\u2013beta pruning works based on a graph similar to Figure 1.\nIn this problem, we will further explore whether and how the order of MIN and MAX, as well as the visiting order of leaf nodes, affect the game and pruning process.\n\nNote: the default visiting order leaf nodes is from leftmost to rightmost (i.e., 8\u21927\u2192\u2026\u21926\u21924).\n\nYour task:\n1. (2 points)\nMinimax\na. Based on Figure 1, fill in the value of each non-leaf node using the MIN/MAX rules.\nb. Swap the order of MIN and MAX at every level (i.e., change MIN to MAX and MAX to MIN), then fill in the value of each non-leaf node using the MIN/MAX rules.\n\n2. (6 points)\nAlpha\u2013beta pruning\na. Apply alpha\u2013beta pruning to the game tree obtained in Task 1b (with MIN and MAX swapped). Show the pruning process, and identify which leaf nodes are not visited due to pruning.\nb. Apply alpha\u2013beta pruning to the original game tree in Figure 1, but visit the leaf nodes from rightmost to leftmost (i.e., 4\u21926\u2192\u20267\u21928). Show the pruning process and identify which leaf nodes are not visited due to pruning.\n\n3. (2 points)\nBriefly discuss whether and how the ordering of MIN/MAX levels and the visiting order of leaf nodes influence the search, including the final minimax values and the amount of pruning.",
+      "points": 10,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 5,
+        "mostly_correct": 9,
+        "correct": 10,
+        "criteria": [
+          "Correct minimax values for non-leaf nodes in both original and swapped MIN/MAX trees",
+          "Correct demonstration of alpha\u2013beta pruning process including which leaf nodes are pruned in both scenarios",
+          "Clear explanation of how ordering of MIN/MAX and leaf visit order affects pruning and final values"
+        ],
+        "instructions": "Full credit requires correct minimax computations, clear step-by-step alpha\u2013beta pruning traces that identify pruned leaves, and a concise discussion on ordering effects. Partial credit for correct portions of the tree or pruning trace. Deduct for incorrect or inconsistent traces."
+      }
+    },
+    {
+      "id": "question_4",
+      "text": "Problem 4 (15 points, reading)\n\n1. Select and read one paper from the list provided below that interests you most and could potentially inform or inspire your final project idea.\n\n2. (5 points)\nWrite one paragraph summarizing the paper: for example, briefly describe the problem it addresses, the approach or methods used, and the main findings, contributions, and novelty.\n\n3. (10 points)\nWrite at least one paragraph of your own insights: for example, what you found most interesting, how the paper connects to your project idea, or any questions/criticisms you have after reading it.\n\nIf none of the listed papers interest you or are relevant to your final project idea, you may propose another paper to read. Before proceeding, please email me:\n1. How your proposed paper is relevant to you.\n2. The paper you would like to propose. Once approved, you may read and work on your proposed paper.\n\nPlease do not select the paper you\u2019ve selected in HW1.\n\nPapers\n1. LLM benchmark: Sparks of Artificial General Intelligence: Early experiments with GPT-4 by Bubeck et al. (2023)\n2. ICL: Language Models are Few-Shot Learners by Brown et al. (2020)\n3. ICL, explainable AI: An Explanation of In-context Learning as Implicit Bayesian Inference by Xie et al. (2022)\n4. RAG: Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks by Lewis et al. (2021)\n5. RAG, multimodality, fact-checking: Correcting misinformation on social media with a large language model by Zhou et al. (2024)\n6. RAG, HCI: Social-RAG: Retrieving from Group Interactions to Socially Ground AI Generation by Wang et al. (2025)\n7. Agent AI, multimodality: Agent AI: Surveying the Horizons of Multimodal Interaction by Durante et al. (2024)\n8. Follow-up of CoT: Self-Consistency Improves Chain of Thought Reasoning in Language Models by Wang et al. (2023)\n9. Follow-up of CoT: Tree of Thoughts: Deliberate Problem Solving with Large Language Models by Yao et al. (2023)\n10. Tool-augmented LLMs: HuggingGPT: Solving AI Tasks with ChatGPT and its Friends in Hugging Face by Shen et al. (2023)\n11. LLM, multi-agents: Large Language Model based Multi-Agents: A Survey of Progress and Challenges by Guo et al. (2024)\n12. LLM, political bias: From Pretraining Data to Language Models to Downstream Tasks: Tracking the Trails of Political Biases Leading to Unfair NLP Models by Feng et al. (2023)\n13. AI + social intelligence: Advancing Social Intelligence in AI Agents: Technical Challenges and Open Questions by Mathur et al. (2024)\n14. AI + mental health: Cognitive Reframing of Negative Thoughts through Human-Language Model Interaction by Sharma et al. (2023)\n15. AI + education: Bridging the Novice-Expert Gap via Models of Decision-Making: A Case Study on Remediating Math Mistakes by Wang et al. (2024)\n\nNew papers added to HW2:\n16. AI factuality/hallucination, explainable AI: Why Language Models Hallucinate by Kalai et al. (2025)\n17. Deepfake: Deepfake detection by human crowds, machines, and machine-informed crowds by Groh et al. (2021)\n18. Deepfake: Human Detection of Political Speech Deepfakes across Transcripts, Audio, and Video by Groh et al. (2022)\n19. Deepfake: How to Distinguish AI-Generated Images from Authentic Photographs by Kamali et al. (2024)\n20. AI persuasion: LLM-generated messages can persuade humans on policy issues by Bai et al. (2025)\n21. AI persuasion: On the conversational persuasiveness of GPT-4 by Salvi et al. (2025)\n22. Pluralistic AI & Alignment: A Roadmap to Pluralistic Alignment by Sorensen et al. (2024)\n23. Human-centered AI: Language Models as Critical Thinking Tools: A Case Study of Philosophers by Ye et al. (2024)\n24. AI trust & safety: The Factuality Tax of Diversity-Intervened Text-to-Image Generation: Benchmark and Fact-Augmented Intervention by Wan et al. (2024)\n25. Game AI: Mastering the game of Go with deep neural networks and tree search by Silver et al. (2024)\n26. LLM: DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning by Guo et al. (2025)\n27. AI for health: Towards conversational diagnostic artificial intelligence by Tu et al. (2025)\n28. AI for health, LLM benchmark: HealthBench: Evaluating Large Language Models Towards Improved Human Health by Arora et al. (2025)\n29. AI for health: Large Language Models Encode Clinical Knowledge by Singhal et al. (2022)\n30. AI for health: Towards Expert-Level Medical Question Answering with Large Language Models by Singhal et al. (2023)",
+      "points": 15,
+      "answer_key": null,
+      "question_type": "essay",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 7.5,
+        "mostly_correct": 13.5,
+        "correct": 15,
+        "criteria": [
+          "Concise accurate summary of the selected paper (problem, methods, main findings) for the 5-point portion",
+          "Insightful, original commentary connecting the paper to the student's interests/project and critical reflections for the 10-point portion",
+          "Inclusion/upload of the selected paper and reading notes as required (missing notes/paper yields 0 for reading portion per assignment rules)"
+        ],
+        "instructions": "Grade the summary for clarity and accuracy; grade the insights for depth, relevance to the student's project, and critical thinking. Verify that the student uploaded the selected paper and reading notes; award no points for the reading portion if those files are missing. Partial credit allowed for reasonable summaries or well-motivated insights even if not comprehensive."
+      }
+    }
+  ],
+  "total_points": 60,
+  "grading_instructions": "Apply the per-question rubrics. Ensure uploaded artifacts are present where required: programming question must include commented source code (0 points for missing commented code); reading question must include the selected paper and reading notes (0 points for missing). For numerical/programming reports, check for consistency between reported statistics and provided traces/logs. For problem-solving questions, require clear step-by-step work to award full credit; partial reasoning or partial traces receive partial credit as indicated. Use the 'criteria' lists for each question to assign specific deductions. Be conservative when awarding 'mostly_correct' \u2014 this should reflect minor errors only.",
+  "allow_partial_credit": true,
+  "created_by": "ConfigGeneratorAgent",
+  "version": "1.0"
+}

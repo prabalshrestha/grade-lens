@@ -30,12 +30,22 @@ class QuestionGrade(BaseModel):
         default=None, description="Specific deductions with reasons"
     )
 
+    # Image processing metadata
+    extracted_from_image: bool = Field(
+        default=False, description="Whether answer content was extracted from images"
+    )
+    image_processing_notes: Optional[str] = Field(
+        default=None, description="Notes about image extraction process"
+    )
+
     @field_validator("score")
     @classmethod
     def validate_score(cls, v, info):
         """Ensure score doesn't exceed max_score"""
         if "max_score" in info.data and v > info.data["max_score"]:
-            raise ValueError(f"Score {v} cannot exceed max_score {info.data['max_score']}")
+            raise ValueError(
+                f"Score {v} cannot exceed max_score {info.data['max_score']}"
+            )
         return v
 
     def get_percentage(self) -> float:
@@ -117,6 +127,7 @@ class AssignmentGrade(BaseModel):
             if abs(question_sum - total) > 0.01:
                 # This is just a warning, not an error
                 import logging
+
                 logging.warning(
                     f"Question scores sum ({question_sum}) doesn't match total_score ({total})"
                 )
@@ -198,4 +209,3 @@ class AssignmentGrade(BaseModel):
 
     class Config:
         extra = "allow"
-

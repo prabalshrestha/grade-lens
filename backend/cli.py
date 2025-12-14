@@ -13,7 +13,13 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
-from config import OPENAI_API_KEY, OPENAI_MODEL, SUBMISSIONS_BASE_DIR, OUTPUT_BASE_DIR, ASSIGNMENTS_BASE_DIR
+from config import (
+    OPENAI_API_KEY,
+    OPENAI_MODEL,
+    SUBMISSIONS_BASE_DIR,
+    OUTPUT_BASE_DIR,
+    ASSIGNMENTS_BASE_DIR,
+)
 from src.processors.document_processor import DocumentProcessor
 from src.processors.input_processor import InputProcessor
 from src.agents.qa_grading_agent import QAGradingAgent
@@ -44,18 +50,36 @@ class GradingWorkflow:
         assignments_base_dir: str = ASSIGNMENTS_BASE_DIR,
         answer_key_pdf: Optional[str] = None,
         grading_mode: str = "full",
+        enable_image_processing: bool = True,
     ):
         self.assignment_id = assignment_id
         self.submissions_base_dir = submissions_base_dir
         self.output_base_dir = output_base_dir
         self.answer_key_pdf = answer_key_pdf
         self.grading_mode = grading_mode
+        self.enable_image_processing = enable_image_processing
 
         # Initialize components
         self.input_processor = InputProcessor(assignments_base_dir)
         self.doc_processor = DocumentProcessor()
-        self.grading_agent = QAGradingAgent(OPENAI_API_KEY, model=OPENAI_MODEL, grading_mode=grading_mode)
+        self.grading_agent = QAGradingAgent(
+            OPENAI_API_KEY, model=OPENAI_MODEL, grading_mode=grading_mode
+        )
         self.output_manager = OutputManager(output_base_dir)
+
+        # Initialize new multi-stage components
+        from src.agents.answer_extraction_agent import AnswerExtractionAgent
+        from src.agents.report_generator import ReportGenerator
+
+        self.answer_extractor = AnswerExtractionAgent(
+            OPENAI_API_KEY,
+            model=OPENAI_MODEL,
+            enable_image_processing=enable_image_processing,
+        )
+        self.report_generator = ReportGenerator(
+            OPENAI_API_KEY,
+            model=OPENAI_MODEL,
+        )
 
         # Load assignment configuration
         self.assignment_config: Optional[AssignmentConfig] = None
@@ -64,7 +88,9 @@ class GradingWorkflow:
         """Load and validate assignment configuration"""
         logger.info(f"Loading assignment configuration: {self.assignment_id}")
 
-        self.assignment_config = self.input_processor.load_assignment(self.assignment_id)
+        self.assignment_config = self.input_processor.load_assignment(
+            self.assignment_id
+        )
 
         if not self.assignment_config:
             logger.error(f"Failed to load assignment: {self.assignment_id}")
@@ -75,10 +101,12 @@ class GradingWorkflow:
             if not os.path.exists(self.answer_key_pdf):
                 logger.error(f"Answer key PDF not found: {self.answer_key_pdf}")
                 return False
-            
+
             logger.info(f"Loading answer key from: {self.answer_key_pdf}")
-            answer_key_text = self.doc_processor.extract_text_from_file(self.answer_key_pdf)
-            
+            answer_key_text = self.doc_processor.extract_text_from_file(
+                self.answer_key_pdf
+            )
+
             if answer_key_text:
                 # Override/set the answer key text in config
                 self.assignment_config.answer_key_text = answer_key_text
@@ -107,7 +135,9 @@ class GradingWorkflow:
         """Setup assignment-specific logging"""
         # Create output directory (include grading mode if not full)
         if self.grading_mode != "full":
-            output_dir = os.path.join(self.output_base_dir, f"{self.assignment_id}_{self.grading_mode}")
+            output_dir = os.path.join(
+                self.output_base_dir, f"{self.assignment_id}_{self.grading_mode}"
+            )
         else:
             output_dir = os.path.join(self.output_base_dir, self.assignment_id)
         os.makedirs(output_dir, exist_ok=True)
@@ -133,7 +163,9 @@ class GradingWorkflow:
         self.setup_logging()
 
         logger.info("=" * 80)
-        logger.info(f"Starting grading workflow for: {self.assignment_config.assignment_name}")
+        logger.info(
+            f"Starting grading workflow for: {self.assignment_config.assignment_name}"
+        )
         logger.info("=" * 80)
 
         # Get submissions directory
@@ -165,27 +197,72 @@ class GradingWorkflow:
 
                 logger.info(f"Student: {student_name} (ID: {student_id})")
 
-                # Extract text from document
-                submission_text = self.doc_processor.extract_text_from_file(file_path)
-
-                if not submission_text.strip():
-                    logger.warning(f"No text extracted from {filename}")
-                    # Create grade for empty submission
+                # Check if file is empty
+                file_size = os.path.getsize(file_path)
+                if file_size == 0:
+                    logger.warning(f"Empty file: {filename}")
                     grade = self.grading_agent.grade_empty_submission(
                         self.assignment_config,
                         student_name,
                         student_id,
                         filename,
                     )
-                else:
-                    # Grade the submission
-                    grade = self.grading_agent.grade_submission(
+                    grades.append(grade)
+                    continue
+
+                # ========== NEW 3-STAGE PIPELINE ==========
+
+                # STAGE 1: Extract answers from text and images
+                logger.info("Stage 1: Extracting answers...")
+                extracted_answers = self.answer_extractor.extract_answers(
+                    file_path, self.assignment_config
+                )
+
+                # Check if any answers were extracted
+                has_content = any(
+                    answer_data.get("text", "").strip()
+                    for answer_data in extracted_answers.values()
+                )
+
+                if not has_content:
+                    logger.warning(f"No content extracted from {filename}")
+                    grade = self.grading_agent.grade_empty_submission(
                         self.assignment_config,
                         student_name,
-                        submission_text,
                         student_id,
                         filename,
                     )
+                    grades.append(grade)
+                    continue
+
+                # STAGE 2: Grade each question individually
+                logger.info("Stage 2: Grading individual questions...")
+                grade = self.grading_agent.grade_submission_with_extraction(
+                    self.assignment_config,
+                    student_name,
+                    extracted_answers,
+                    student_id,
+                    filename,
+                )
+
+                if not grade:
+                    logger.error(f"Failed to grade submission: {filename}")
+                    continue
+
+                # STAGE 3: Generate comprehensive report
+                logger.info("Stage 3: Generating report...")
+                report_data = self.report_generator.generate_report(
+                    grade.questions, self.assignment_config, student_name
+                )
+
+                # Update grade with report data
+                grade.overall_comment = report_data["overall_comment"]
+                grade.strengths = report_data["strengths"]
+                grade.areas_for_improvement = report_data["areas_for_improvement"]
+                grade.requires_human_review = report_data["requires_human_review"]
+                grade.review_reason = report_data["review_reason"]
+
+                # ==========================================
 
                 if grade:
                     grades.append(grade)
@@ -193,14 +270,20 @@ class GradingWorkflow:
                         f"Grade: {grade.total_score}/{grade.max_score} "
                         f"({grade.get_percentage():.1f}%)"
                     )
+                    if grade.requires_human_review:
+                        logger.warning(f"⚠️  Flagged for review: {grade.review_reason}")
                 else:
                     logger.error(f"Failed to grade submission: {filename}")
 
             except Exception as e:
                 logger.error(f"Error processing {file_path}: {str(e)}", exc_info=True)
                 # Create error grade
-                student_name = QAGradingAgent.extract_student_name(os.path.basename(file_path))
-                student_id = QAGradingAgent.extract_student_id(os.path.basename(file_path))
+                student_name = QAGradingAgent.extract_student_name(
+                    os.path.basename(file_path)
+                )
+                student_id = QAGradingAgent.extract_student_id(
+                    os.path.basename(file_path)
+                )
                 error_grade = self.grading_agent._create_error_grade(
                     self.assignment_config,
                     student_name,
@@ -225,8 +308,12 @@ class GradingWorkflow:
 
         try:
             # Use modified assignment_id with grading mode suffix if not full
-            output_id = f"{self.assignment_id}_{self.grading_mode}" if self.grading_mode != "full" else self.assignment_id
-            
+            output_id = (
+                f"{self.assignment_id}_{self.grading_mode}"
+                if self.grading_mode != "full"
+                else self.assignment_id
+            )
+
             saved_files = self.output_manager.save_results(
                 output_id,
                 grades,
@@ -307,7 +394,9 @@ def create_assignment_template(assignment_id: str, num_questions: int = 2):
         print(f"  Location: {os.path.join(ASSIGNMENTS_BASE_DIR, assignment_id)}")
         print(f"\nNext steps:")
         print(f"  1. Edit config.json to customize the assignment")
-        print(f"  2. Add student submissions to: {os.path.join(SUBMISSIONS_BASE_DIR, assignment_id)}/")
+        print(
+            f"  2. Add student submissions to: {os.path.join(SUBMISSIONS_BASE_DIR, assignment_id)}/"
+        )
         print(f"  3. Run: python main.py --assignment {assignment_id}")
     else:
         print(f"\n✗ Failed to create assignment template")
@@ -323,7 +412,7 @@ def generate_config_from_pdf(
     auto_approve: bool = False,
 ):
     """Generate assignment configuration from PDF files"""
-    
+
     print("\n" + "=" * 80)
     print("ASSIGNMENT CONFIG GENERATOR")
     print("=" * 80)
@@ -361,7 +450,7 @@ def generate_config_from_pdf(
         # Generate configuration
         print("Analyzing PDFs and generating configuration...")
         print("(This may take 30-60 seconds depending on document length)")
-        
+
         config = generator.generate_config(
             assignment_id=assignment_id,
             assignment_name=assignment_name,
@@ -389,13 +478,17 @@ def generate_config_from_pdf(
             print("\n" + "=" * 80)
             print("Review the configuration above.")
             print("=" * 80)
-            response = input("\nSave this configuration? (yes/no/edit): ").strip().lower()
-            
+            response = (
+                input("\nSave this configuration? (yes/no/edit): ").strip().lower()
+            )
+
             if response in ["no", "n"]:
                 print("Configuration not saved.")
                 return 1
             elif response in ["edit", "e"]:
-                print("\n✓ Configuration will be saved. You can edit it manually after.")
+                print(
+                    "\n✓ Configuration will be saved. You can edit it manually after."
+                )
 
         # Create assignment directory
         os.makedirs(assignment_dir, exist_ok=True)
@@ -416,13 +509,19 @@ def generate_config_from_pdf(
             f.write(f"**Term:** {term or 'N/A'}  \n")
             f.write(f"**Total Points:** {config.get('total_points', 0)}  \n\n")
             f.write(f"## Questions\n\n")
-            f.write(f"This assignment has {len(config.get('questions', []))} questions.\n\n")
+            f.write(
+                f"This assignment has {len(config.get('questions', []))} questions.\n\n"
+            )
             f.write(f"## Usage\n\n")
-            f.write(f"1. Place student submissions in: `submissions/{assignment_id}/`\n")
+            f.write(
+                f"1. Place student submissions in: `submissions/{assignment_id}/`\n"
+            )
             f.write(f"2. Run grading: `python main.py --assignment {assignment_id}`\n")
             f.write(f"3. View results in: `output/{assignment_id}/`\n\n")
             f.write(f"## Configuration\n\n")
-            f.write(f"Generated automatically from PDFs. Review and edit `config.json` if needed.\n")
+            f.write(
+                f"Generated automatically from PDFs. Review and edit `config.json` if needed.\n"
+            )
 
         print("\n" + "=" * 80)
         print("✓ SUCCESS")
@@ -430,7 +529,7 @@ def generate_config_from_pdf(
         print(f"Configuration saved to: {config_path}")
         print(f"Assignment directory: {assignment_dir}")
         print(f"Submissions directory: {submissions_dir}")
-        
+
         if not is_valid:
             print("\n⚠ Note: Please review and fix validation issues in config.json")
 
@@ -438,7 +537,7 @@ def generate_config_from_pdf(
         print(f"  1. Review/edit: {config_path}")
         print(f"  2. Add student submissions to: {submissions_dir}/")
         print(f"  3. Run: python main.py --assignment {assignment_id}")
-        
+
         return 0
 
     except Exception as e:
@@ -609,7 +708,7 @@ Examples:
             logger.error("--name is required when using --generate-config")
             print("Error: --name is required when using --generate-config")
             return 1
-        
+
         if not args.questions_pdf:
             logger.error("--questions-pdf is required when using --generate-config")
             print("Error: --questions-pdf is required when using --generate-config")
@@ -630,7 +729,7 @@ Examples:
         workflow = GradingWorkflow(
             args.assignment,
             answer_key_pdf=args.with_answer_key,
-            grading_mode=args.grading_mode
+            grading_mode=args.grading_mode,
         )
         success = workflow.run()
         return 0 if success else 1

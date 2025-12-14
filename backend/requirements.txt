@@ -1,6 +1,25 @@
-# All Python dependencies have been moved to backend/requirements.txt
-# Install with: pip install -r backend/requirements.txt
+# Grade Lens Backend Dependencies
+# Install with: pip install -r requirements.txt
 
-# Or run from backend directory:
-# cd backend && pip install -r requirements.txt
+# Core LangChain and OpenAI
+langchain-openai>=0.1.0
+langchain-core>=0.2.0
 
+# Document Processing
+PyPDF2>=3.0.0
+python-docx>=1.1.0
+
+# Image Processing for PDF (NEW)
+pymupdf>=1.23.0  # Extract embedded images from PDFs
+pdf2image>=1.16.3  # Convert PDF pages to images
+Pillow>=10.0.0  # Image processing and manipulation
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn>=0.24.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# Environment Configuration
+python-dotenv>=1.0.0
