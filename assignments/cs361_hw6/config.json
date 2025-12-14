@@ -1,0 +1,195 @@
+{
+  "assignment_id": "cs361_hw6",
+  "assignment_name": "cs361_hw6 pushdown automata",
+  "course_code": "cs361",
+  "term": "Fall 2025",
+  "questions": [
+    {
+      "id": "question_1",
+      "text": "1. (5 pts) Give the formal trace (include all paths) of the string \u201cbacccddf\u201d through PDA A.",
+      "points": 5.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5.0,
+        "criteria": [
+          "Includes all possible nondeterministic paths through PDA A and identifies accepting/rejecting paths"
+        ],
+        "instructions": "Award full credit for a complete, step-by-step trace for every path with correct stack behavior and correct acceptance conclusion. Partial credit for correct partial traces or correct handling of some paths. Minor bookkeeping errors in stack content may receive mostly_correct credit if the acceptance decision and main transitions are correct."
+      }
+    },
+    {
+      "id": "question_2",
+      "text": "2. (5 pts) Give the set notation for PDA A",
+      "points": 5.0,
+      "answer_key": null,
+      "question_type": "short_answer",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5.0,
+        "criteria": [],
+        "instructions": ""
+      }
+    },
+    {
+      "id": "question_3",
+      "text": "3. (10 pts) Draw the state machine (PDA) for the following language  \nB = {w over {a,b,c} | anbcn+2, n\u2265 0}",
+      "points": 10.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 5.0,
+        "mostly_correct": 9.5,
+        "correct": 10.0,
+        "criteria": [
+          "Correct handling of the pattern a^n b c^{n+2} including appropriate stack usage to match counts",
+          "States and transitions are logically organized (start, push/pop behavior, acceptance condition)"
+        ],
+        "instructions": "Award full credit for a correct PDA diagram that accepts exactly the described language (or equivalent formal description). Partial credit for PDAs that capture the main idea but have minor transition omissions or slightly incorrect stack actions. Verify that the PDA accepts n=0 case (i.e., bc^2) correctly."
+      }
+    },
+    {
+      "id": "question_4",
+      "text": "4. (20 pts) Draw the state machine (PDA) for the following language  \nC = {w over {a,b} | |w| > 0, w has more a\u2019s than b\u2019s, and w has an even number of a\u2019s }",
+      "points": 20.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 10.0,
+        "mostly_correct": 19.0,
+        "correct": 20.0,
+        "criteria": [
+          "Correct mechanism for ensuring more a's than b's (stack or counting technique) is implemented",
+          "Correct tracking of parity of number of a's (evenness) using states or stack encoding",
+          "Handles non-empty requirement (|w| > 0) and accepts exactly strings meeting all conditions"
+        ],
+        "instructions": "Full credit for a PDA that enforces both 'more a's than b's' and 'even number of a's' and rejects other strings. Partial credit for designs that correctly track one requirement but not the other, or that have off-by-one parity errors. Check representative strings including small lengths and edge cases when grading."
+      }
+    },
+    {
+      "id": "question_5",
+      "text": "5. (5 pts) Derive the shortest string  of the language for Grammar C. (Show every step of \nthe derivation and justify each step with a rule.)",
+      "points": 5.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5.0,
+        "criteria": [
+          "Shows a complete leftmost (or rightmost) derivation from start symbol to terminal string",
+          "Each application of a production rule is labeled/justified with the rule number",
+          "The final string is the shortest possible per grammar"
+        ],
+        "instructions": "Award full credit only if the derivation is correct and the final string is provably the shortest. Partial credit for correct derivation steps that do not reach the shortest string or that miss justifying a step."
+      }
+    },
+    {
+      "id": "question_6",
+      "text": "6. (5 pts) Derive a string that applies every rule of grammar C at least once. (Show every \nstep of the derivation and justify each step with a rule.)",
+      "points": 5.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5.0,
+        "criteria": [
+          "The derivation includes at least one application of each grammar rule (Rules 1-8)",
+          "Each derivation step is shown and justified by rule number",
+          "Final string is composed entirely of terminals and demonstrates usage of all rules"
+        ],
+        "instructions": "Full credit if the derivation includes every rule at least once and is valid. Partial credit if most rules are used or if a correct derivation is given but one rule is missed."
+      }
+    },
+    {
+      "id": "question_7",
+      "text": "7. (5 pts) Is grammar C ambiguous? If yes, prove this by showing two parse trees for the \nsame string. If no, explain your intuition (not a proof).",
+      "points": 5.0,
+      "answer_key": "The grammar is ambiguous.",
+      "question_type": "short_answer",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5.0,
+        "criteria": [
+          "If yes: provides a concrete string and two distinct parse trees (or derivations) for it",
+          "If no: provides a clear, reasonable intuition why ambiguity seems unlikely (references to unique structural decomposition)",
+          "Explanation or trees are clearly labeled and correct"
+        ],
+        "instructions": "If student claims ambiguity, require two distinct parse trees for the same terminal string for full credit. If claiming unambiguous, award full credit for a clear, persuasive intuition; do not require formal proof. Partial credit for attempts that identify possible ambiguity but fail to fully demonstrate it."
+      }
+    },
+    {
+      "id": "question_8",
+      "text": "8. (10 pts) Design the CFG for the language of PDA A.",
+      "points": 10.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 5.0,
+        "mostly_correct": 9.5,
+        "correct": 10.0,
+        "criteria": [
+          "CFG generates exactly the same language as PDA A (productions correspond to PDA behaviors)",
+          "Productions are syntactically correct and use the correct nonterminals/terminals",
+          "Explanation or justification linking productions to PDA transitions is provided"
+        ],
+        "instructions": "Full credit for a CFG that is equivalent to the PDA and for a brief justification. Partial credit for CFGs that capture most but not all behaviors or that have small errors in productions."
+      }
+    },
+    {
+      "id": "question_9",
+      "text": "9. (10 pts) Design the CFG for language B",
+      "points": 10.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 5.0,
+        "mostly_correct": 9.5,
+        "correct": 10.0,
+        "criteria": [
+          "CFG correctly generates strings of the form a^n b c^{n+2} for n \u2265 0",
+          "Handles the n = 0 case producing b c^2 correctly"
+        ],
+        "instructions": "Accept any correct CFG that generates exactly the specified language. Partial credit if the CFG generates most strings correctly but allows some incorrect ones or misses the +2 in the c count."
+      }
+    },
+    {
+      "id": "question_10",
+      "text": "10. (15 pts) Give a set notation for the language of grammar C.",
+      "points": 15.0,
+      "answer_key": null,
+      "question_type": "short_answer",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 7.5,
+        "mostly_correct": 14.25,
+        "correct": 15.0,
+        "criteria": [
+          "Provides a precise set-theoretic description of L(G) (using quantifiers, concatenation/power notation, or constructive description)",
+          "Captures all possible terminal strings generated by Grammar C according to its productions",
+          "Notation is unambiguous and interpretable"
+        ],
+        "instructions": "Full credit for a correct and precise set notation describing the language. Partial credit for descriptions that capture much of the structure but omit edge cases or are slightly imprecise."
+      }
+    }
+  ],
+  "total_points": 90.0,
+  "grading_instructions": "Grade each question according to the per-question rubric. Require that students show work for full credit (derivations, traces, or diagrams). Award partial credit based on the 'attempted' and 'mostly_correct' tiers when the student's solution demonstrates partial understanding or contains only minor mistakes. For designs (PDAs, CFGs), verify equivalence by checking representative strings including edge cases; accept equivalent alternative formulations. For proofs/derivations, ensure each rule application is justified. Deduct points for missing required components (e.g., not showing stack behavior for PDA traces) and for incorrect conclusions despite mostly correct work.",
+  "allow_partial_credit": true,
+  "created_by": "ConfigGeneratorAgent",
+  "version": "1.0"
+}

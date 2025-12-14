@@ -1,39 +1,35 @@
-# Environment variables
-.env
-
-# Virtual environment
-venv/
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-.mypy_cache/
+*.so
+.Python
+venv/
+ENV/
+*.log
 
-# Distribution / packaging
-*.egg-info/
+# Node
+node_modules/
 dist/
-build/
+*.local
+package-lock.json
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Project specific
-# Student submissions (keep directory structure but not files)
-submissions/*
+output/
+submissions/*/
+backend/temp_uploads/
+backend/.env
+
+# Keep structure
 !submissions/.gitkeep
-
-# Output files (keep directory structure but not files)
-output/*
 !output/.gitkeep
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-.pytest_cache/

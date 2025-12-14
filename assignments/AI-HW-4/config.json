@@ -1,0 +1,133 @@
+{
+  "assignment_id": "AI-HW-4",
+  "assignment_name": "ai-hw-4",
+  "course_code": "CS557",
+  "term": "fall 2025",
+  "questions": [
+    {
+      "id": "question_1",
+      "text": "Problem 1: Probability Basics (15 points)\n\nTask A (5 points)\n\nSuppose P(A | B, C) = P(B | A, C). Determine whether this implies P(A | C) = P(B | C). Provide a mathematical proof that the statement is true, or give a counterexample showing that it is false.",
+      "points": 5,
+      "answer_key": null,
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5,
+        "criteria": [
+          "States clearly whether the implication holds or not",
+          "Provides a correct mathematical proof when the statement is true, OR a correct counterexample when false",
+          "Logical steps are valid and well-explained (manipulation of conditional probabilities, use of Bayes rule if needed)",
+          "Conclusion is clearly stated and follows from the argument"
+        ],
+        "instructions": "Award full credit for a correct, complete proof or a valid counterexample with explanation. Partial credit for a correct approach with algebraic steps that are incomplete or contain minor errors. No credit if no argument or an incorrect unrelated argument is provided."
+      }
+    },
+    {
+      "id": "question_2",
+      "text": "Problem 1: Probability Basics (15 points)\n\nTask B (5 points)\n\nIn our class, we showed that if X and Y are conditionally independent given Z, then P(X | Y, Z) = P(X | Z). Can we also have P(Y | X, Z) = P(Y | Z)? Provide a mathematical proof that the statement is true, or give a counterexample showing that it is false.",
+      "points": 5,
+      "answer_key": null,
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5,
+        "criteria": [
+          "Recognizes symmetry (or lack thereof) in conditional independence and correctly reasons about P(Y | X, Z)",
+          "Provides a clear proof when true, or a valid counterexample when false",
+          "Uses correct probability identities and conditional independence definitions",
+          "Clear conclusion consistent with provided argument"
+        ],
+        "instructions": "Full credit for a rigorous proof or a correct counterexample. Partial credit for correct reasoning but incomplete justification or algebraic steps. Deduct for invalid or irrelevant arguments."
+      }
+    },
+    {
+      "id": "question_3",
+      "text": "Problem 1: Probability Basics (15 points)\n\nTask C (5 points)\n\nIn our class, we showed that if X and Y are conditionally independent given Z, it does not necessarily mean that X and Y are independent. What about the reverse? In other words, if X and Y are independent, must they also be conditionally independent given Z? Provide a mathematical proof that the statement is true, or give a counterexample showing that it is false.",
+      "points": 5,
+      "answer_key": null,
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 2.5,
+        "mostly_correct": 4.75,
+        "correct": 5,
+        "criteria": [
+          "States the claim and answers yes/no",
+          "Provides a valid counterexample if the claim is false, OR a proof if true",
+          "Counterexample must explicitly show independence marginally but dependence conditionally (or vice versa)",
+          "Explanation ties the example to definitions of independence and conditional independence"
+        ],
+        "instructions": "Full credit for a correct counterexample or proof with full justification. Partial credit for a correct counterexample with incomplete explanation or for correct intuition without formal demonstration."
+      }
+    },
+    {
+      "id": "question_4",
+      "text": "Problem 2: Bayesian Networks (10 points)\n\nConsider the following three Bayesian network structures over variables A, B, and C:\n\n(a) Common cause\n\n(b) Causal chain\n\n(c) Common effect\n\nFor each structure, determine whether the following statements are true or false, and justify your answer .\n\nProvide a mathematical proof that the statement is true, or give a counterexample showing that it is false.\n\nProve for each of the structures, whether A \u2aeb B holds or A \u2aeb B | C holds.\n\nIn other words, fill the following table with true or false.\n\nProvide a mathematical proof that the statement is true, or give a counterexample showing that it is false.\n\nA \u2aeb B?\nA \u2aeb B | C?\n(a) Common cause False True\n(b) Causal chain True\n(c) Common effect True\n\nNote: Some cells are already filled based on in-class discussion; you do not need to re-justify those.",
+      "points": 10,
+      "answer_key": "(Model answers for the standard structures)\n(a) Common cause (A <- C -> B): A \u2aeb B? False. A \u2aeb B | C? True.\n(b) Causal chain (A -> C -> B): A \u2aeb B? False. A \u2aeb B | C? True.\n(c) Common effect / v-structure (A -> C <- B): A \u2aeb B? True. A \u2aeb B | C? False.",
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 5,
+        "mostly_correct": 9.5,
+        "correct": 10,
+        "criteria": [
+          "Correctly identifies independence/dependence (True/False) for each structure and each query",
+          "Provides justification using d-separation or conditional independence calculations",
+          "If relying on in-class filled cells, only justify the remaining cells as requested",
+          "Explanations are concise and reference the appropriate graphical criterion (d-separation) or probability arguments"
+        ],
+        "instructions": "Full credit for correctly filling all table entries with correct justifications. Partial credit for correct entries with incomplete justification or correct reasoning applied to some but not all cases. Award zero if table is incorrect and no sensible justification is provided."
+      }
+    },
+    {
+      "id": "question_5",
+      "text": "Problem 3: Inference in Bayesian Networks (35 points)\n\nConsider the following Bayesian network describing a simplified medical diagnosis problem:\n\n\u25cf S: The patient has a smoking habit (T/F)\n\u25cf L: The patient has lung cancer (T/F)\n\u25cf B: The patient has bronchitis (T/F)\n\u25cf X: The patient has an abnormal X-ray (T/F)\n\u25cf D: The patient experiences shortness of breath (dyspnea) (T/F)\n\nConditional Probability Distributions (CPDs):\n\nTask A (15 points)\n\nCompute P(L=T | X=T, D=T) using exact inference by enumeration.",
+      "points": 15,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 7.5,
+        "mostly_correct": 14.25,
+        "correct": 15,
+        "criteria": [
+          "Sets up the correct joint distribution terms needed for enumeration (lists all variable assignments and weights)",
+          "Performs correct marginalization and normalization to obtain P(L=T | X=T, D=T)",
+          "Shows clear intermediate steps (sums/products) and final numeric answer",
+          "Arithmetic is correct and any approximations are noted"
+        ],
+        "instructions": "Award full credit for a correct enumeration with clear steps and correct normalization. Partial credit for correctly setting up the summations but making arithmetic errors or omitting minor terms. Deduct for incorrect use of conditional independence assumptions or wrong factorization."
+      }
+    },
+    {
+      "id": "question_6",
+      "text": "Problem 3: Inference in Bayesian Networks (35 points)\n\nTask B (20 points, programming)\n\nEstimate P(L=T | X=T, D=T) using approximate inference by sampling.\n\nYour estimation should be based on (1) 10 samples, (2) 100 samples, and (3) 1,000 samples.",
+      "points": 20,
+      "answer_key": null,
+      "question_type": "coding",
+      "rubric": {
+        "no_submission": 0,
+        "attempted": 10,
+        "mostly_correct": 19,
+        "correct": 20,
+        "criteria": [
+          "Provides runnable source code (required) with sufficient comments explaining implementation and how to reproduce results",
+          "Implements a correct sampling algorithm (e.g., ancestral sampling with rejection/likelihood weighting/Gibbs sampling as appropriate)",
+          "Reports estimated probabilities for the three required sample sizes (10, 100, 1000) and describes variability/convergence",
+          "Demonstrates reproducibility (random seed or instructions) and discusses differences from exact inference result"
+        ],
+        "instructions": "Full credit requires submitted, commented source code plus a clear report of estimates for the three sample sizes and brief analysis of results (variance, convergence). If code is missing, score 0 for this question as per assignment policy. Partial credit for correct algorithm and results but missing reproducibility or incomplete documentation; small numerical errors tolerated for stochastic estimates."
+      }
+    }
+  ],
+  "total_points": 60,
+  "grading_instructions": "Grade each question according to its rubric. For proof questions, prioritize logical correctness and completeness; for problem-solving, verify correct setup, factorization, and arithmetic; for programming, require the commented source code and reproducibility. Partial credit given per rubric levels. Enforce the policy that programming tasks without submitted commented code receive 0 points. Note collaboration and citation requirements \u2014 graders should check that submitted work is written in the student's own words and that external contributions are disclosed. Use provided per-question rubrics to allocate points; tie-break ambiguous cases in favor of awarding partial credit if the student's work demonstrates understanding.",
+  "allow_partial_credit": true,
+  "created_by": "ConfigGeneratorAgent",
+  "version": "1.0"
+}

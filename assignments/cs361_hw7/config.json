@@ -1,0 +1,59 @@
+{
+  "assignment_id": "cs361_hw7",
+  "assignment_name": "CS361 HW7 - Pumping Lemma for Context Free Languages",
+  "course_code": "CS361",
+  "term": "Fall 2025",
+  "answer_key_file": "assignments/cs361_hw7/answer_key.pdf",
+  "questions": [
+    {
+      "id": "question_1",
+      "text": "1. (30 points) Use the pumping lemma for context-free languages to prove that the following language is NOT context-free:\nL1 = {a^r b^s c^t | r > s, s > t, t > 0}.\nShow all steps of the proof as demonstrated in class, and show all cases (and all subcases, sub-subcases, etc.).",
+      "points": 30.0,
+      "answer_key": null,
+      "question_type": "proof",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 15.0,
+        "mostly_correct": 27.0,
+        "correct": 30.0,
+        "criteria": [
+          "Step 1: Correctly state the pumping lemma for context-free languages (Assume L is CF).",
+          "Step 2: Correctly introduce the pumping length p.",
+          "Step 3: Choose an appropriate witness string w ∈ L1 with |w| > p, showing how it satisfies r > s > t > 0.",
+          "Step 4: Perform the decomposition w = uvwxy following |vwx| ≤ p and |vx| > 0.",
+          "Step 5: Full case analysis — a complete enumeration of every possible position of v and x (in a-block, b-block, c-block, or spanning boundaries). Must include subcases and sub-subcases where v and x overlap boundaries.",
+          "Step 6: For each case, show a contradiction by choosing a pump value i such that the pumped string is not in L1.",
+          "Step 7: Clear final conclusion that L1 is not context-free."
+        ],
+        "instructions": "Follow the six-step structure demonstrated in class: (1) Assume CF, (2) Let p, (3) Choose a string, (4) Decompose, (5) Case analysis with subcases and overlapping segments, (6) Conclude. Award full credit only if all steps are present and a complete, exhaustive case analysis is shown. Mostly_correct (27 pts) is awarded for small notation errors or one minor missing subcase. Attempted (15 pts) is awarded if Steps 1–3 are present but later steps are incomplete. Deduct points for missing overlapping cases, incorrect decompositions, or incomplete conclusions."
+      }
+    },
+    {
+      "id": "question_2",
+      "text": "2. (30 points) Two of the languages below are context free. One is not. Prove one of the languages IS context free by drawing the state machine for a PDA corresponding to it. Prove one of the languages IS context free by giving a CFG for it. For the language that is NOT context free, show the first three steps of the pumping lemma proof (1. Assume CF, 2. Let p be the pumping length, 3. Choose a string …), list all cases for the decompositions, and work out two overlapping-character subcases (‘v in a’s, x in a’s & b’s,’ etc.).\n\na. L2a = {a^r b^s c^t | r > s, s > t, t > 0, r < 4}\n\nb. L2b = {a^r b^s c^t d^q | r = t; s < 2q; q,r,s,t > 0}\n\nc. L2c = {a^r b^s c^t d^q | r = q, s < t; r,q,s,t > 0}",
+      "points": 30.0,
+      "answer_key": null,
+      "question_type": "problem_solving",
+      "rubric": {
+        "no_submission": 0.0,
+        "attempted": 15.0,
+        "mostly_correct": 27.0,
+        "correct": 30.0,
+        "criteria": [
+          "Correct identification of which two languages are context-free and which one is not.",
+          "For the PDA proof: diagram or clearly specified PDA transitions that enforce the numeric constraints.",
+          "For the CFG proof: complete production rules and a short justification that they generate the language.",
+          "For the non-context-free language: Step 1 (Assume CF), Step 2 (Let p), Step 3 (Choose string), plus enumeration of all possible decompositions under |vwx| ≤ p and |vx| > 0.",
+          "Detailed proofs for at least TWO overlapping cases (v and x spanning different symbol blocks).",
+          "Clear conclusion based on contradiction with the pumping lemma."
+        ],
+        "instructions": "Points are allocated according to the required deliverables: 4–6 pts for identifying which languages are CF; 8–10 pts for the PDA; 8–10 pts for the CFG; 12–16 pts for the pumping lemma setup (Steps 1–3), listing all cases, and fully working out two overlapping subcases. Follow the same structure used in class: assumption, pumping length, witness string, decomposition, case enumeration, and conclusions. Mostly_correct (27 pts) permits small omissions or small notation errors. Attempted (15 pts) is awarded only if at least identification and partial constructions are provided. Deduct points for missing cases, missing overlapping subcases, incorrect CFG/PDA rules, or logical gaps."
+      }
+    }
+  ],
+  "total_points": 60.0,
+  "grading_instructions": "Grade each problem following the six-step proof structure shown in class and reflected in the whiteboard: Assume → Let p → Choose string → Decompose → Case analysis → Conclusion. PDA answers must include a state diagram or explicit transitions. CFG answers must include production rules and justification. For pumping-lemma proofs, ensure the student explicitly states the lemma, uses a correct witness string, exhaustively lists all decompositions, and proves contradictions in the required overlapping subcases. Award partial credit according to completeness and rigor.",
+  "allow_partial_credit": true,
+  "created_by": "ConfigGeneratorAgent",
+  "version": "1.1"
+}
