@@ -90,6 +90,23 @@ class AssignmentGrade(BaseModel):
         default=None, description="Areas needing improvement"
     )
 
+    # Multi-file submission fields (NEW)
+    is_late: bool = Field(
+        default=False, description="Whether submission was marked as late"
+    )
+    file_count: int = Field(default=1, description="Number of files in submission")
+    submission_type: str = Field(
+        default="document", description="Type: document, code, or mixed"
+    )
+    file_list: Optional[List[str]] = Field(
+        default=None, description="List of submitted filenames"
+    )
+
+    # Code-specific metadata (NEW)
+    code_evaluation: Optional[Dict[str, Any]] = Field(
+        default=None, description="Code evaluation results (if code submission)"
+    )
+
     # Metadata
     graded_at: str = Field(
         default_factory=lambda: datetime.now().isoformat(),

@@ -88,9 +88,60 @@ class DocumentProcessor:
             return DocumentProcessor.extract_text_from_docx(file_path)
         elif file_extension == ".txt":
             return DocumentProcessor.extract_text_from_txt(file_path)
+        elif file_extension == ".py":
+            return DocumentProcessor.extract_text_from_python(file_path)
+        elif file_extension == ".java":
+            return DocumentProcessor.extract_text_from_java(file_path)
         else:
             logger.warning(f"Unsupported file type: {file_extension}")
             return ""
+
+    @staticmethod
+    def extract_text_from_python(file_path: str) -> str:
+        """Extract code from Python file with metadata"""
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                code = file.read()
+
+            # Add metadata header
+            filename = os.path.basename(file_path)
+            header = f"# Python File: {filename}\n# Lines: {len(code.splitlines())}\n\n"
+
+            return header + code
+        except Exception as e:
+            logger.error(f"Error reading Python file {file_path}: {str(e)}")
+            return ""
+
+    @staticmethod
+    def extract_text_from_java(file_path: str) -> str:
+        """Extract code from Java file with metadata"""
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                code = file.read()
+
+            # Add metadata header
+            filename = os.path.basename(file_path)
+            header = f"// Java File: {filename}\n// Lines: {len(code.splitlines())}\n\n"
+
+            return header + code
+        except Exception as e:
+            logger.error(f"Error reading Java file {file_path}: {str(e)}")
+            return ""
+
+    @staticmethod
+    def is_code_file(file_path: str) -> bool:
+        """
+        Check if file is a code file
+
+        Args:
+            file_path: Path to file
+
+        Returns:
+            True if code file (.py, .java), False otherwise
+        """
+        file_extension = os.path.splitext(file_path)[1].lower()
+        code_extensions = {".py", ".java", ".cpp", ".c", ".js", ".ts"}
+        return file_extension in code_extensions
 
     @staticmethod
     def get_all_submissions(
@@ -101,13 +152,13 @@ class DocumentProcessor:
 
         Args:
             submissions_dir: Directory containing submissions
-            extensions: List of allowed extensions (default: ['.pdf', '.docx', '.txt'])
+            extensions: List of allowed extensions (default: ['.pdf', '.docx', '.txt', '.py', '.java'])
 
         Returns:
             List of file paths
         """
         if extensions is None:
-            extensions = [".pdf", ".docx", ".txt"]
+            extensions = [".pdf", ".docx", ".txt", ".py", ".java"]
 
         submissions = []
         if os.path.exists(submissions_dir):

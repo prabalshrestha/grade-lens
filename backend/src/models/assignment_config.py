@@ -103,6 +103,23 @@ class AssignmentConfig(BaseModel):
         default=True, description="Whether to allow partial credit"
     )
 
+    # Code assignment fields (NEW)
+    assignment_type: str = Field(
+        default="document", description="Type: document, code, or mixed"
+    )
+
+    supported_languages: Optional[List[str]] = Field(
+        default=None, description="Supported languages: python, java, etc."
+    )
+
+    test_cases: Optional[List[Dict[str, Any]]] = Field(
+        default=None, description="Test cases for code evaluation"
+    )
+
+    enable_code_execution: bool = Field(
+        default=False, description="Whether to run code tests (security consideration)"
+    )
+
     # Metadata
     created_by: Optional[str] = Field(default=None)
     created_at: Optional[str] = Field(default=None)
@@ -146,4 +163,3 @@ class AssignmentConfig(BaseModel):
 
     class Config:
         extra = "allow"
-

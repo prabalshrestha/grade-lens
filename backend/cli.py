@@ -7,7 +7,7 @@ import os
 import sys
 import argparse
 import logging
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pathlib import Path
 
 # Add src to path
@@ -51,6 +51,7 @@ class GradingWorkflow:
         answer_key_pdf: Optional[str] = None,
         grading_mode: str = "full",
         enable_image_processing: bool = True,
+        enable_code_execution: bool = False,
     ):
         self.assignment_id = assignment_id
         self.submissions_base_dir = submissions_base_dir
@@ -58,6 +59,7 @@ class GradingWorkflow:
         self.answer_key_pdf = answer_key_pdf
         self.grading_mode = grading_mode
         self.enable_image_processing = enable_image_processing
+        self.enable_code_execution = enable_code_execution
 
         # Initialize components
         self.input_processor = InputProcessor(assignments_base_dir)
@@ -67,9 +69,12 @@ class GradingWorkflow:
         )
         self.output_manager = OutputManager(output_base_dir)
 
-        # Initialize new multi-stage components
+        # Initialize multi-stage components
         from src.agents.answer_extraction_agent import AnswerExtractionAgent
         from src.agents.report_generator import ReportGenerator
+        from src.agents.code_extraction_agent import CodeExtractionAgent
+        from src.agents.code_evaluation_agent import CodeEvaluationAgent
+        from src.processors.submission_grouper import SubmissionGrouper
 
         self.answer_extractor = AnswerExtractionAgent(
             OPENAI_API_KEY,
@@ -80,6 +85,18 @@ class GradingWorkflow:
             OPENAI_API_KEY,
             model=OPENAI_MODEL,
         )
+
+        # Initialize code processing components
+        self.code_extractor = CodeExtractionAgent(
+            OPENAI_API_KEY,
+            model=OPENAI_MODEL,
+        )
+        self.code_evaluator = CodeEvaluationAgent(
+            OPENAI_API_KEY,
+            model=OPENAI_MODEL,
+            enable_execution=enable_code_execution,
+        )
+        self.submission_grouper = SubmissionGrouper()
 
         # Load assignment configuration
         self.assignment_config: Optional[AssignmentConfig] = None
@@ -154,7 +171,7 @@ class GradingWorkflow:
         logger.info(f"Logging to: {log_file}")
 
     def process_all_submissions(self) -> List[AssignmentGrade]:
-        """Process all submissions for the assignment"""
+        """Process all submissions for the assignment (with multi-file support)"""
         if not self.assignment_config:
             logger.error("Assignment configuration not loaded")
             return []
@@ -176,95 +193,71 @@ class GradingWorkflow:
             logger.error(f"Please create the directory and add submissions")
             return []
 
-        # Get all submission files
-        submission_files = self.doc_processor.get_all_submissions(submissions_dir)
-        logger.info(f"Found {len(submission_files)} submissions to process")
+        # Get all submission files (including code files)
+        submission_files = self.doc_processor.get_all_submissions(
+            submissions_dir, extensions=[".pdf", ".docx", ".txt", ".py", ".java"]
+        )
+        logger.info(f"Found {len(submission_files)} file(s) to process")
 
         if not submission_files:
             logger.warning("No submission files found!")
             return []
 
-        # Process each submission
+        # Group files by student
+        student_groups = self.submission_grouper.group_files_by_student(
+            submission_files
+        )
+        logger.info(f"Grouped into {len(student_groups)} student submission(s)")
+
+        # Process each student's group
         grades = []
-        for i, file_path in enumerate(submission_files, 1):
+        for i, (student_key, file_paths) in enumerate(student_groups.items(), 1):
             try:
-                filename = os.path.basename(file_path)
-                logger.info(f"\n[{i}/{len(submission_files)}] Processing: {filename}")
+                logger.info(f"\n[{i}/{len(student_groups)}] Processing: {student_key}")
+                logger.info(
+                    f"  Files ({len(file_paths)}): {[os.path.basename(f) for f in file_paths]}"
+                )
 
-                # Extract student information
-                student_name = QAGradingAgent.extract_student_name(filename)
-                student_id = QAGradingAgent.extract_student_id(filename)
+                # Get student info from group
+                student_info = self.submission_grouper.get_student_info(file_paths)
+                student_name = student_info["student_name"]
+                student_id = student_info["student_id"]
+                is_late = student_info["is_late"]
 
-                logger.info(f"Student: {student_name} (ID: {student_id})")
+                if is_late:
+                    logger.info(f"  ⚠️  Marked as LATE submission")
 
-                # Check if file is empty
-                file_size = os.path.getsize(file_path)
-                if file_size == 0:
-                    logger.warning(f"Empty file: {filename}")
-                    grade = self.grading_agent.grade_empty_submission(
-                        self.assignment_config,
-                        student_name,
-                        student_id,
-                        filename,
+                # Categorize files by type
+                categorized = self.submission_grouper.categorize_files_by_type(
+                    file_paths
+                )
+                code_files = categorized["code"]
+                doc_files = categorized["document"]
+
+                logger.info(
+                    f"  Code files: {len(code_files)}, Document files: {len(doc_files)}"
+                )
+
+                # Process based on file types
+                if code_files and not doc_files:
+                    # Pure code submission
+                    grade = self._grade_code_submission(
+                        code_files, student_name, student_id, is_late
                     )
-                    grades.append(grade)
-                    continue
-
-                # ========== NEW 3-STAGE PIPELINE ==========
-
-                # STAGE 1: Extract answers from text and images
-                logger.info("Stage 1: Extracting answers...")
-                extracted_answers = self.answer_extractor.extract_answers(
-                    file_path, self.assignment_config
-                )
-
-                # Check if any answers were extracted
-                has_content = any(
-                    answer_data.get("text", "").strip()
-                    for answer_data in extracted_answers.values()
-                )
-
-                if not has_content:
-                    logger.warning(f"No content extracted from {filename}")
-                    grade = self.grading_agent.grade_empty_submission(
-                        self.assignment_config,
-                        student_name,
-                        student_id,
-                        filename,
+                elif doc_files and not code_files:
+                    # Pure document submission (existing logic)
+                    grade = self._grade_document_submission(
+                        doc_files, student_name, student_id, is_late
                     )
-                    grades.append(grade)
-                    continue
-
-                # STAGE 2: Grade each question individually
-                logger.info("Stage 2: Grading individual questions...")
-                grade = self.grading_agent.grade_submission_with_extraction(
-                    self.assignment_config,
-                    student_name,
-                    extracted_answers,
-                    student_id,
-                    filename,
-                )
-
-                if not grade:
-                    logger.error(f"Failed to grade submission: {filename}")
-                    continue
-
-                # STAGE 3: Generate comprehensive report
-                logger.info("Stage 3: Generating report...")
-                report_data = self.report_generator.generate_report(
-                    grade.questions, self.assignment_config, student_name
-                )
-
-                # Update grade with report data
-                grade.overall_comment = report_data["overall_comment"]
-                grade.strengths = report_data["strengths"]
-                grade.areas_for_improvement = report_data["areas_for_improvement"]
-                grade.requires_human_review = report_data["requires_human_review"]
-                grade.review_reason = report_data["review_reason"]
-
-                # ==========================================
+                else:
+                    # Mixed submission
+                    grade = self._grade_mixed_submission(
+                        code_files, doc_files, student_name, student_id, is_late
+                    )
 
                 if grade:
+                    # Add file list
+                    grade.file_list = [os.path.basename(f) for f in file_paths]
                     grades.append(grade)
                     logger.info(
                         f"Grade: {grade.total_score}/{grade.max_score} "
@@ -273,30 +266,332 @@ class GradingWorkflow:
                     if grade.requires_human_review:
                         logger.warning(f"⚠️  Flagged for review: {grade.review_reason}")
                 else:
-                    logger.error(f"Failed to grade submission: {filename}")
+                    logger.error(f"Failed to grade submission: {student_key}")
 
             except Exception as e:
-                logger.error(f"Error processing {file_path}: {str(e)}", exc_info=True)
+                logger.error(f"Error processing {student_key}: {str(e)}", exc_info=True)
                 # Create error grade
-                student_name = QAGradingAgent.extract_student_name(
-                    os.path.basename(file_path)
-                )
-                student_id = QAGradingAgent.extract_student_id(
-                    os.path.basename(file_path)
-                )
                 error_grade = self.grading_agent._create_error_grade(
                     self.assignment_config,
-                    student_name,
-                    student_id,
-                    os.path.basename(file_path),
+                    student_info.get("student_name", "unknown"),
+                    student_info.get("student_id", "unknown"),
+                    f"{len(file_paths)} files",
                 )
                 grades.append(error_grade)
 
         logger.info("\n" + "=" * 80)
-        logger.info(f"Completed grading {len(grades)} submissions")
+        logger.info(f"Completed grading {len(grades)} submission(s)")
         logger.info("=" * 80)
 
         return grades
+
+    def _grade_code_submission(
+        self, code_files: List[str], student_name: str, student_id: str, is_late: bool
+    ) -> Optional[AssignmentGrade]:
+        """Grade pure code submission"""
+        logger.info("  Type: Code submission")
+
+        try:
+            # Extract code
+            logger.info("  Stage 1: Extracting code...")
+            code_submission = self.code_extractor.extract_code_submission(
+                code_files, self.assignment_config
+            )
+
+            # Evaluate with hybrid approach
+            logger.info("  Stage 2: Evaluating code...")
+            code_evaluation = self.code_evaluator.evaluate_code(
+                code_submission,
+                self.assignment_config,
+                test_cases=self.assignment_config.test_cases,
+            )
+
+            # Convert to standard format for grading
+            logger.info("  Stage 3: Grading questions...")
+            extracted_answers = self._convert_code_to_answers(
+                code_submission, code_evaluation
+            )
+
+            # Use existing pipeline
+            grade = self.grading_agent.grade_submission_with_extraction(
+                self.assignment_config,
+                student_name,
+                extracted_answers,
+                student_id,
+                f"{len(code_files)} code file(s)",
+            )
+
+            if not grade:
+                return None
+
+            # Generate report
+            logger.info("  Stage 4: Generating report...")
+            report_data = self.report_generator.generate_report(
+                grade.questions, self.assignment_config, student_name
+            )
+
+            # Update grade with report and code-specific data
+            grade.overall_comment = report_data["overall_comment"]
+            grade.strengths = report_data["strengths"]
+            grade.areas_for_improvement = report_data["areas_for_improvement"]
+            grade.requires_human_review = report_data["requires_human_review"]
+            grade.review_reason = report_data["review_reason"]
+
+            grade.is_late = is_late
+            grade.file_count = len(code_files)
+            grade.submission_type = "code"
+            grade.code_evaluation = code_evaluation
+
+            return grade
+
+        except Exception as e:
+            logger.error(f"Error grading code submission: {str(e)}", exc_info=True)
+            return None
+
+    def _grade_document_submission(
+        self, doc_files: List[str], student_name: str, student_id: str, is_late: bool
+    ) -> Optional[AssignmentGrade]:
+        """Grade document submission (existing logic, adapted for multi-file)"""
+        logger.info("  Type: Document submission")
+
+        try:
+            # Process all document files and combine their content
+            if len(doc_files) == 1:
+                # Single file - use existing pipeline
+                primary_file = doc_files[0]
+
+                # Check if file is empty
+                file_size = os.path.getsize(primary_file)
+                if file_size == 0:
+                    logger.warning(f"  Empty file: {os.path.basename(primary_file)}")
+                    grade = self.grading_agent.grade_empty_submission(
+                        self.assignment_config,
+                        student_name,
+                        student_id,
+                        os.path.basename(primary_file),
+                    )
+                    grade.is_late = is_late
+                    grade.file_count = len(doc_files)
+                    return grade
+
+                # STAGE 1: Extract answers from single file
+                logger.info("  Stage 1: Extracting answers...")
+                extracted_answers = self.answer_extractor.extract_answers(
+                    primary_file, self.assignment_config
+                )
+            else:
+                # Multiple files - extract from each and combine
+                logger.info(f"  Processing {len(doc_files)} document files...")
+
+                all_extracted_answers = {}
+
+                # Extract from each file
+                for idx, doc_file in enumerate(doc_files, 1):
+                    filename = os.path.basename(doc_file)
+                    logger.info(f"    File {idx}/{len(doc_files)}: {filename}")
+
+                    # Check if file is empty
+                    file_size = os.path.getsize(doc_file)
+                    if file_size == 0:
+                        logger.warning(f"      Empty file, skipping")
+                        continue
+
+                    # Extract answers from this file
+                    file_answers = self.answer_extractor.extract_answers(
+                        doc_file, self.assignment_config
+                    )
+
+                    # Store with file context
+                    for question_id, answer_data in file_answers.items():
+                        if question_id not in all_extracted_answers:
+                            all_extracted_answers[question_id] = {
+                                "text": "",
+                                "extracted_from_image": False,
+                                "extraction_notes": f"Multi-file submission ({len(doc_files)} files)",
+                            }
+
+                        # Append answer from this file
+                        if answer_data.get("text", "").strip():
+                            all_extracted_answers[question_id][
+                                "text"
+                            ] += f"\n\n--- From {filename} ---\n{answer_data['text']}"
+
+                        # Track if any came from images
+                        if answer_data.get("extracted_from_image"):
+                            all_extracted_answers[question_id][
+                                "extracted_from_image"
+                            ] = True
+
+                extracted_answers = all_extracted_answers
+                logger.info("  Combined answers from all files")
+
+            # Check if any answers were extracted
+            has_content = any(
+                answer_data.get("text", "").strip()
+                for answer_data in extracted_answers.values()
+            )
+
+            if not has_content:
+                logger.warning(f"  No content extracted")
+                submission_desc = (
+                    f"{len(doc_files)} file(s)"
+                    if len(doc_files) > 1
+                    else os.path.basename(doc_files[0])
+                )
+                grade = self.grading_agent.grade_empty_submission(
+                    self.assignment_config,
+                    student_name,
+                    student_id,
+                    submission_desc,
+                )
+                grade.is_late = is_late
+                grade.file_count = len(doc_files)
+                return grade
+
+            # STAGE 2: Grade each question individually
+            logger.info("  Stage 2: Grading individual questions...")
+            submission_desc = (
+                f"{len(doc_files)} file(s)"
+                if len(doc_files) > 1
+                else os.path.basename(doc_files[0])
+            )
+            grade = self.grading_agent.grade_submission_with_extraction(
+                self.assignment_config,
+                student_name,
+                extracted_answers,
+                student_id,
+                submission_desc,
+            )
+
+            if not grade:
+                return None
+
+            # STAGE 3: Generate comprehensive report
+            logger.info("  Stage 3: Generating report...")
+            report_data = self.report_generator.generate_report(
+                grade.questions, self.assignment_config, student_name
+            )
+
+            # Update grade with report data
+            grade.overall_comment = report_data["overall_comment"]
+            grade.strengths = report_data["strengths"]
+            grade.areas_for_improvement = report_data["areas_for_improvement"]
+            grade.requires_human_review = report_data["requires_human_review"]
+            grade.review_reason = report_data["review_reason"]
+
+            grade.is_late = is_late
+            grade.file_count = len(doc_files)
+            grade.submission_type = "document"
+
+            return grade
+
+        except Exception as e:
+            logger.error(f"Error grading document submission: {str(e)}", exc_info=True)
+            return None
+
+    def _grade_mixed_submission(
+        self,
+        code_files: List[str],
+        doc_files: List[str],
+        student_name: str,
+        student_id: str,
+        is_late: bool,
+    ) -> Optional[AssignmentGrade]:
+        """Grade submission with both code and documents"""
+        logger.info("  Type: Mixed submission (code + documents)")
+
+        try:
+            # For mixed submissions, concatenate everything
+            logger.info("  Stage 1: Extracting from all files...")
+
+            # Extract from code files
+            code_submission = self.code_extractor.extract_code_submission(
+                code_files, self.assignment_config
+            )
+
+            # Extract from document files
+            doc_text = ""
+            for doc_file in doc_files:
+                text = self.doc_processor.extract_text_from_file(doc_file)
+                doc_text += (
+                    f"\n\n--- Document: {os.path.basename(doc_file)} ---\n{text}"
+                )
+
+            # Combine content
+            combined_content = code_submission["combined_code"] + "\n\n" + doc_text
+
+            # Create temporary extracted answers with combined content
+            # Let AI map content to questions
+            extracted_answers = {}
+            for question in self.assignment_config.questions:
+                extracted_answers[question.id] = {
+                    "text": combined_content,
+                    "extracted_from_image": False,
+                    "extraction_notes": f"Mixed submission: {len(code_files)} code + {len(doc_files)} document file(s)",
+                }
+
+            # Grade
+            logger.info("  Stage 2: Grading questions...")
+            grade = self.grading_agent.grade_submission_with_extraction(
+                self.assignment_config,
+                student_name,
+                extracted_answers,
+                student_id,
+                f"{len(code_files) + len(doc_files)} files",
+            )
+
+            if not grade:
+                return None
+
+            # Generate report
+            logger.info("  Stage 3: Generating report...")
+            report_data = self.report_generator.generate_report(
+                grade.questions, self.assignment_config, student_name
+            )
+
+            # Update grade
+            grade.overall_comment = report_data["overall_comment"]
+            grade.strengths = report_data["strengths"]
+            grade.areas_for_improvement = report_data["areas_for_improvement"]
+            grade.requires_human_review = report_data["requires_human_review"]
+            grade.review_reason = report_data["review_reason"]
+
+            grade.is_late = is_late
+            grade.file_count = len(code_files) + len(doc_files)
+            grade.submission_type = "mixed"
+
+            return grade
+
+        except Exception as e:
+            logger.error(f"Error grading mixed submission: {str(e)}", exc_info=True)
+            return None
+
+    def _convert_code_to_answers(
+        self, code_submission: dict, code_evaluation: dict
+    ) -> Dict[str, Dict[str, Any]]:
+        """Convert code submission to extracted answers format"""
+        # Create answer entries for each question
+        # For code assignments, typically all code answers all questions
+        extracted_answers = {}
+
+        combined_code = code_submission.get("combined_code", "")
+        analysis = code_submission.get("analysis", "")
+        ai_eval = code_evaluation.get("ai_evaluation", {})
+
+        # Combine code, analysis, and evaluation
+        full_content = f"{combined_code}\n\nCode Analysis:\n{analysis}"
+
+        if ai_eval:
+            full_content += f"\n\nAI Evaluation:\n{str(ai_eval)}"
+
+        for question in self.assignment_config.questions:
+            extracted_answers[question.id] = {
+                "text": full_content,
+                "extracted_from_image": False,
+                "extraction_notes": f"Code submission with {code_submission.get('file_count', 0)} file(s)",
+            }
+
+        return extracted_answers
 
     def save_results(self, grades: List[AssignmentGrade]):
         """Save grading results"""
@@ -680,6 +975,12 @@ Examples:
         help="Enable verbose logging",
     )
 
+    parser.add_argument(
+        "--enable-code-execution",
+        action="store_true",
+        help="Enable code execution for test cases (disabled by default for security)",
+    )
+
     args = parser.parse_args()
 
     # Set logging level
@@ -730,6 +1031,7 @@ Examples:
             args.assignment,
             answer_key_pdf=args.with_answer_key,
             grading_mode=args.grading_mode,
+            enable_code_execution=args.enable_code_execution,
         )
         success = workflow.run()
         return 0 if success else 1
